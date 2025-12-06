@@ -73,7 +73,7 @@ _USE_WANDB = flags.DEFINE_boolean(
 )
 _SUFFIX = flags.DEFINE_string("suffix", None, "Suffix for the experiment name.")
 _SEED = flags.DEFINE_integer("seed", 1, "Random seed.")
-_NUM_ENVS = flags.DEFINE_integer("num_envs", 4096, "Number of parallel envs.")
+_NUM_ENVS = flags.DEFINE_integer("num_envs", 2048, "Number of parallel envs.")
 _DEVICE = flags.DEFINE_string("device", "cuda:0", "Device for training.")
 _MULTI_GPU = flags.DEFINE_boolean(
     "multi_gpu", False, "If true, use multi-GPU training (distributed)."
@@ -129,7 +129,10 @@ def main(argv):
   print(f"Experiment name: {exp_name}")
 
   # Logging directory
-  logdir = os.path.abspath(os.path.join("/tmp/rslrl-training-logs/", exp_name))
+  # logdir = os.path.abspath(os.path.join("/tmp/rslrl-training-logs/", exp_name))
+  repo_root = os.path.dirname(os.path.abspath(__file__))  # /path/to/mujoco_playground
+  repo_logdir = os.path.join(repo_root, "logs")
+  logdir = os.path.join(repo_logdir, exp_name)
   os.makedirs(logdir, exist_ok=True)
   print(f"Logs are being stored in: {logdir}")
 
@@ -181,7 +184,7 @@ def main(argv):
 
   obs_size = raw_env.observation_size
   if isinstance(obs_size, dict):
-    train_cfg.obs_groups = {"policy": ["state"], "critic": ["privileged_state"]}
+    train_cfg.obs_groups = {"policy": ["state"], "critic": ["privileged_state"]} # asymmetric actor-critic
   else:
     train_cfg.obs_groups = {"policy": ["state"], "critic": ["state"]}
 
@@ -198,7 +201,8 @@ def main(argv):
   # If resume, load from checkpoint
   if train_cfg.resume:
     resume_path = wrapper_torch.get_load_path(
-        "/tmp/rslrl-training-logs/",
+        repo_logdir,
+        # "/tmp/rslrl-training-logs/",
         load_run=train_cfg.load_run,
         checkpoint=train_cfg.checkpoint,
     )
@@ -246,6 +250,7 @@ def main(argv):
       break
 
   reward_sum = sum(s.reward for s in rollout)
+  print("each reward:", [s.reward for s in rollout])
   print(f"Rollout reward: {reward_sum}")
 
   # Render
