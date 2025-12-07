@@ -42,6 +42,9 @@ from mujoco_playground.config import manipulation_params
 import tensorboardX
 import wandb
 
+import rscope.config as rcfg
+from pathlib import Path
+
 
 xla_flags = os.environ.get("XLA_FLAGS", "")
 xla_flags += " --xla_gpu_triton_gemm_any=True"
@@ -283,6 +286,14 @@ def main(argv):
   logdir = epath.Path("logs").resolve() / exp_name
   logdir.mkdir(parents=True, exist_ok=True)
   print(f"Logs are being stored in: {logdir}")
+
+  # Set up rscope paths
+  rscope_dir = logdir / "rscope_runs"
+  rscope_dir.mkdir(parents=True, exist_ok=True)
+  rcfg.BASE_PATH = Path(rscope_dir)
+  rcfg.TEMP_PATH = Path(rscope_dir / "temp")
+  rcfg.META_PATH = Path(rscope_dir / "rscope_meta.pkl")
+  print(f"RScope rollouts saved in: {rscope_dir}")
 
   # Initialize Weights & Biases if required
   if _USE_WANDB.value and not _PLAY_ONLY.value:

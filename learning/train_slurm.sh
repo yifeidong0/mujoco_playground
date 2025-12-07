@@ -23,7 +23,7 @@ source /mimer/NOBACKUP/groups/softenable-design/yifeidong/mujoco_playground/.ven
 
 # ensure wandb works
 export WANDB_MODE=online
-export WANDB_ENTITY=yifeidong
+export WANDB_ENTITY=yif
 export WANDB_PROJECT=leapcube_jax_ppo
 
 # ------------------------------------------------------------------------------
